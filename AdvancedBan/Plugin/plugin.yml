@@ -1,9 +1,0 @@
-name: AdvancedBan
-main: ayd1ndemirci\AdvancedBan\Main
-api: 4.0.0
-version: 1
-author: ayd1ndemirci
-
-permissions:
-  ban.admin.command:
-    default: false

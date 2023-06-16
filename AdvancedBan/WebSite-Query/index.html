@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ban Sorgu</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #36393F;
+        }
+
+        .title {
+            color: #FFF;
+            margin-top: 20px;
+        }
+
+        .form-label {
+            color: #FFFFFF;
+            margin-top: 20px;
+        }
+
+        .form-container {
+            margin-top: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .form-input {
+            padding: 5px;
+            width: 200px;
+        }
+
+        .form-submit {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .result-table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            text-align: left;
+            background-color: #FFF;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 12px 15px;
+            border: none;
+        }
+
+        .result-table th {
+            background-color: #5f667c;
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .result-table td {
+            border-top: 1px solid #ddd;
+        }
+
+        .result-table tr:last-child td {
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">Ban Sorgu</h1>
+<div class="form-container">
+    <form id="banForm">
+        <label class="form-label" for="playerName">Oyuncu Adı:</label>
+        <input class="form-input" type="text" id="playerName" name="playerName" required>
+        <button class="form-submit" type="submit">Ara</button>
+    </form>
+</div>
+<div id="result" class="result"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('banForm');
+        var result = document.getElementById('result');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var playerNameInput = document.getElementById('playerName');
+            var playerName = playerNameInput.value.trim();
+            if (playerName === '') {
+                result.innerHTML = 'Lütfen oyuncu adını girin.';
+                return;
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'backend.php');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            var banData = response.data;
+                            var adminName = banData.adminName;
+                            var reason = banData.reason;
+                            var timestamp = banData.time;
+                            var date = new Date(timestamp * 1000);
+                            var day = date.getDate();
+                            var month = date.getMonth() + 1;
+                            var year = date.getFullYear();
+                            var hours = date.getHours();
+                            var minutes = date.getMinutes();
+                            const formattedDate = timestamp === "SINIRSIZ" ? "Sınırsız" : day + '.' + month + '.' + year;
+                            const formattedTime = timestamp === "SINIRSIZ" ? "Uzaklaştırılmış" : hours + ':' + (minutes < 10 ? '0' : '') + minutes;
+                            var html = '<table class="result-table">';
+                            html += '<tr><th>Yetkili</th><th>Sebep</th><th>Açılış Tarihi</th></tr>';
+                            html += '<tr><td>' + adminName + '</td><td>' + reason + '</td><td>' + formattedDate + ' ' + formattedTime + '</td></tr>';
+                            html += '</table>';
+                            result.innerHTML = html;
+                        } else {
+                            result.innerHTML = 'Oyuncunun ban kaydı yok.';
+                        }
+                    } else {
+                        result.innerHTML = 'Sunucuyla bağlantı hatası.';
+                    }
+                }
+            };
+            xhr.send('playerName=' + encodeURIComponent(playerName));
+        });
+    });
+</script>
+</body>
+</html>
